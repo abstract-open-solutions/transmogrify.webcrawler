@@ -51,7 +51,7 @@ class WebCrawler(object):
         self.max = options.get('max',None)
         self.cache = options.get('cache', None)
         self.context = transmogrifier.context
-        #self.alias_bases  = [a for a in options.get('alias_bases', '').split() if a]
+        self.alias_bases  = [a for a in options.get('alias_bases', '').split() if a]
         # make sure we end with a /
         if self.site_url[-1] != '/':
             self.site_url += '/'
@@ -83,7 +83,7 @@ class WebCrawler(object):
         webchecker.Page = pagefactory
 
         self.checker = MyChecker(self.site_url, self.cache)
-        #self.checker.alias_bases = self.alias_bases
+        self.checker.alias_bases = self.alias_bases
 
         self.checker.setflags(checkext   = self.checkext,
                          verbose    = self.verbose,
@@ -103,9 +103,9 @@ class WebCrawler(object):
 
 
 
-        #for root in self.alias_bases:
-        #    self.checker.addroot(root, add_to_do = 0)
-        #    self.checker.sortorder[root] = 0
+        for root in self.alias_bases:
+            self.checker.addroot(root, add_to_do = 0)
+            self.checker.sortorder[root] = 0
 
 
         while self.checker.todo:
@@ -226,17 +226,17 @@ class MyChecker(Checker):
         old_url = url
         # actually open alias instead
 
-#        if self.site_url.endswith('/'):
-#            realbase=self.site_url[:-1]
+        if self.site_url.endswith('/'):
+            realbase=self.site_url[:-1]
 
-#        for a in self.alias_bases:
-#            if a.endswith('/'):
-#                a=a[:-1]
-#            if a and url.startswith(a):
-#                base = url[:len(a)]
-#                path = url[len(a):]
-#                url = realbase+path
-#                break
+        for a in self.alias_bases:
+            if a.endswith('/'):
+                a=a[:-1]
+            if a and url.startswith(a):
+                base = url[:len(a)]
+                path = url[len(a):]
+                url = realbase+path
+                break
 
         try:
             return self.urlopener.open(old_url)
