@@ -58,6 +58,50 @@ class WebCrawler(object):
         if os.path.exists(self.site_url):
             self.site_url = 'file://'+urllib.pathname2url(self.site_url)
 
+    def process_url(self, url, part):
+        base = self.site_url
+        self.checker.dopage((url,part))
+        page = self.checker.name_table.get(url) #have to usse unredirected
+        origin = url
+        url = self.checker.redirected.get(url,url)
+        names = self.checker.link_names.get(url,[])
+        path = url[len(self.site_url):]
+        path = '/'.join([p for p in path.split('/') if p])
+        info = self.checker.infos.get(url)
+        file = self.checker.files.get(url)
+        sortorder = self.checker.sortorder.get(origin,0)
+        text = page and page.html() or file
+        if info and text:
+            item = dict(_path         = path,
+                        _site_url     = base,
+                        _backlinks    = names,
+                        _sortorder    = sortorder,
+                        _content      = text,
+                        _content_info = info,
+                        _orig_path    = path)
+            if page and page.html():
+                item['_html'] = page.text #so cache save no cleaned version
+            if origin != url:
+                orig_path = origin[len(self.site_url):]
+                orig_path = '/'.join([p for p in orig_path.split('/') if p])
+                item['_origin'] = orig_path
+            if self.feedback:
+                msg = u'ok'
+                self.feedback.success('webcrawler',msg)
+            ctype = item.get('_content_info',{}).get('content-type','')
+            csize = item.get('_content_info',{}).get('content-length',0)
+            date = item.get('_content_info',{}).get('date','')
+            self.logger.info("Crawled: %s (%d links, size=%s, %s %s)" % (
+                str(url),
+                len(item.get('_backlinks',[])),
+                csize,
+                ctype,
+                date))
+            return item
+        else:
+            self.logger.debug("Error: %s" %str(url))
+            return dict(_bad_url = origin)
+            
     def __iter__(self):
         for item in self.previous:
             yield item
@@ -102,7 +146,7 @@ class WebCrawler(object):
             self.checker.sortorder[url] = 0
 
 
-
+        # XXX
         for root in self.alias_bases:
             self.checker.addroot(root, add_to_do = 0)
             self.checker.sortorder[root] = 0
@@ -115,57 +159,26 @@ class WebCrawler(object):
             #urls.sort()
             del urls[1:]
             for url,part in urls:
-
+                mio_url = urlparse.urlparse(url)
+                mio_base_url = "%s://%s/" % (mio_url.scheme, mio_url.netloc)
+                url_condition = mio_base_url in self.alias_bases
+                
                 if not url.startswith(self.site_url[:-1]):
-                    self.checker.markdone((url,part))
-                    self.logger.debug("External: %s" %str(url))
-                    yield dict(_bad_url = url)
+                    if url_condition:
+                        # is an alias
+                        item = self.process_url(url, part)
+                        yield item
+                    else:
+                        self.checker.markdone((url,part))
+                        self.logger.debug("External: %s" %str(url))
+                        yield dict(_bad_url = url)
                 elif [pat for pat in self.ignore_re if pat and pat.search(url)]:
                     self.checker.markdone((url,part))
                     self.logger.debug("Ignoring: %s" %str(url))
                     yield dict(_bad_url = url)
                 else:
-                    base = self.site_url
-                    self.checker.dopage((url,part))
-                    page = self.checker.name_table.get(url) #have to usse unredirected
-                    origin = url
-                    url = self.checker.redirected.get(url,url)
-                    names = self.checker.link_names.get(url,[])
-                    path = url[len(self.site_url):]
-                    path = '/'.join([p for p in path.split('/') if p])
-                    info = self.checker.infos.get(url)
-                    file = self.checker.files.get(url)
-                    sortorder = self.checker.sortorder.get(origin,0)
-                    text = page and page.html() or file
-                    if info and text:
-                        item = dict(_path         = path,
-                                    _site_url     = base,
-                                    _backlinks    = names,
-                                    _sortorder    = sortorder,
-                                    _content      = text,
-                                    _content_info = info,
-                                    _orig_path    = path)
-                        if page and page.html():
-                            item['_html'] = page.text #so cache save no cleaned version
-                        if origin != url:
-                            orig_path = origin[len(self.site_url):]
-                            orig_path = '/'.join([p for p in orig_path.split('/') if p])
-                            item['_origin'] = orig_path
-                        if self.feedback:
-                            self.feedback.success('webcrawler',msg)
-                        ctype = item.get('_content_info',{}).get('content-type','')
-                        csize = item.get('_content_info',{}).get('content-length',0)
-                        date = item.get('_content_info',{}).get('date','')
-                        self.logger.info("Crawled: %s (%d links, size=%s, %s %s)" % (
-                            str(url),
-                            len(item.get('_backlinks',[])),
-                            csize,
-                            ctype,
-                            date))
-                        yield item
-                    else:
-                        self.logger.debug("Error: %s" %str(url))
-                        yield dict(_bad_url = origin)
+                    item = self.process_url(url, part)
+                    yield item
 
 
 
@@ -226,6 +239,7 @@ class MyChecker(Checker):
         old_url = url
         # actually open alias instead
 
+        #XXX
         if self.site_url.endswith('/'):
             realbase=self.site_url[:-1]
 
