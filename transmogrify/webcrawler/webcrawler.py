@@ -171,9 +171,13 @@ class WebCrawler(object):
                             self.checker.markdone((url,part))
                             self.logger.debug("Ignoring: %s" %str(url))
                             yield dict(_bad_url = url)
-                        else:
+                        elif urlparse.urlparse(self.site_url).path in mio_url.path:
                             item = self.process_url(url, part)
                             yield item
+                        else:
+                            self.checker.markdone((url,part))
+                            self.logger.debug("External: %s" %str(url))
+                            yield dict(_bad_url = url)
                     else:
                         self.checker.markdone((url,part))
                         self.logger.debug("External: %s" %str(url))
