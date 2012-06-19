@@ -160,11 +160,6 @@ class WebCrawler(object):
             del urls[1:]
             for url,part in urls:
                 
-                if [pat for pat in self.ignore_re if pat and pat.search(url)]:
-                    self.checker.markdone((url,part))
-                    self.logger.debug("Ignoring: %s" %str(url))
-                    yield dict(_bad_url = url)
-                
                 mio_url = urlparse.urlparse(url)
                 mio_base_url = "%s://%s/" % (mio_url.scheme, mio_url.netloc)
                 url_condition = mio_base_url in self.alias_bases
@@ -172,12 +167,21 @@ class WebCrawler(object):
                 if not url.startswith(self.site_url[:-1]):
                     if url_condition:
                         # is an alias
-                        item = self.process_url(url, part)
-                        yield item
+                        if [pat for pat in self.ignore_re if pat and pat.search(url)]:
+                            self.checker.markdone((url,part))
+                            self.logger.debug("Ignoring: %s" %str(url))
+                            yield dict(_bad_url = url)
+                        else:
+                            item = self.process_url(url, part)
+                            yield item
                     else:
                         self.checker.markdone((url,part))
                         self.logger.debug("External: %s" %str(url))
                         yield dict(_bad_url = url)
+                elif [pat for pat in self.ignore_re if pat and pat.search(url)]:
+                    self.checker.markdone((url,part))
+                    self.logger.debug("Ignoring: %s" %str(url))
+                    yield dict(_bad_url = url)
                 else:
                     item = self.process_url(url, part)
                     yield item
