@@ -168,7 +168,7 @@ class WebCrawler(object):
                 my_url = urlparse.urlparse(url)
                 my_base_url = "%s://%s/" % (my_url.scheme, my_url.netloc)
                 my_path = my_url.path
-                url_condition = mio_base_url in self.alias_bases
+                url_condition = my_base_url in self.alias_bases
                 quoted_url = "%s%s"  % (my_base_url[:-1], urllib.quote(my_path))
 
                 if (not url.startswith(self.site_url[:-1])) and \
