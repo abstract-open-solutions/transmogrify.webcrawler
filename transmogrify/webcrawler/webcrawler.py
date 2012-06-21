@@ -250,12 +250,12 @@ class MyChecker(Checker):
         # actually open alias instead
 
         #XXX
-        if self.site_url.endswith('/'):
-            realbase=self.site_url[:-1]
+        # if self.site_url.endswith('/'):
+        #     realbase=self.site_url[:-1]
 
         for a in self.alias_bases:
-            if a.endswith('/'):
-                a=a[:-1]
+            # if a.endswith('/'):
+            #     a=a[:-1]
             if a and url.startswith(a):
                 base = url[:len(a)]
                 path = url[len(a):]
@@ -263,7 +263,11 @@ class MyChecker(Checker):
                 break
 
         try:
-            return self.urlopener.open(old_url)
+            # XXX: Hack for handle "bad urls"
+            # Some ISPRA Site Urls must ends with '/'
+            if not url.endswith('/'):
+                url = "%s/" % url
+            return self.urlopener.open(url)
         except (OSError, IOError), msg:
             msg = self.sanitize(msg)
             self.note(0, "Error %s", msg)

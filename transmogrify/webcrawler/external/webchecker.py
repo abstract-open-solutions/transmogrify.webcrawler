@@ -541,6 +541,8 @@ class Checker:
     def openpage(self, url_pair):
         url, fragment = url_pair
         try:
+            # XXX: Hack for handle "bad urls"
+            # Some ISPRA Site Urls must ends with '/'
             if not url.endswith('/'):
                 url = "%s/" % url
             return self.urlopener.open(url)
