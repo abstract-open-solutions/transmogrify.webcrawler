@@ -254,8 +254,8 @@ class MyChecker(Checker):
             realbase=self.site_url[:-1]
 
         for a in self.alias_bases:
-            # if a.endswith('/'):
-            #     a=a[:-1]
+            if a.endswith('/'):
+                a=a[:-1]
             if a and url.startswith(a):
                 base = url[:len(a)]
                 path = url[len(a):]
@@ -265,7 +265,10 @@ class MyChecker(Checker):
         try:
             # XXX: Hack for handle "bad urls"
             # Some ISPRA Site Urls must ends with '/'
-            if not old_url.endswith('/'):
+            if not old_url.endswith('/') and not (
+                    old_url.endswith('default.html') or \
+                    old_url.endswith('index.html') or \
+                    old_url.endswith('index.html1')):
                 old_url = "%s/" % old_url
             return self.urlopener.open(old_url)
         except (OSError, IOError), msg:
