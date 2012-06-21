@@ -179,7 +179,7 @@ class WebCrawler(object):
                             self.checker.markdone((url,part))
                             self.logger.debug("Ignoring: %s" %str(url))
                             yield dict(_bad_url = url)
-                        elif urlparse.urlparse(self.site_url).path in mio_url.path:
+                        elif urlparse.urlparse(self.site_url).path in my_url.path:
                             item = self.process_url(url, part)
                             yield item
                         else:
