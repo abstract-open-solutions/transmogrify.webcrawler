@@ -146,7 +146,7 @@ class WebCrawler(object):
             self.checker.sortorder[url] = 0
 
 
-        # XXX
+        # XXX: decommented original code
         for root in self.alias_bases:
             self.checker.addroot(root, add_to_do = 0)
             self.checker.sortorder[root] = 0
@@ -249,9 +249,9 @@ class MyChecker(Checker):
         old_url = url
         # actually open alias instead
 
-        #XXX
-        # if self.site_url.endswith('/'):
-        #     realbase=self.site_url[:-1]
+        #XXX: decommented original code
+        if self.site_url.endswith('/'):
+            realbase=self.site_url[:-1]
 
         for a in self.alias_bases:
             # if a.endswith('/'):
