@@ -1,21 +1,26 @@
+import re
+import urllib
+import os
+import urlparse
+from sys import stderr
+import logging
+
 from _socket import socket
-from transmogrify.webcrawler.staticcreator import OpenOnRead
+from htmlentitydefs import entitydefs
+from BeautifulSoup import UnicodeDammit
+
 from zope.interface import implements
 from zope.interface import classProvides
 
 from collective.transmogrifier.interfaces import ISectionBlueprint
 from collective.transmogrifier.interfaces import ISection
 
+from transmogrify.webcrawler.staticcreator import OpenOnRead
 from transmogrify.webcrawler.external import webchecker
 from transmogrify.webcrawler.external.webchecker import Checker,Page
-from transmogrify.webcrawler.external.webchecker import MyHTMLParser,MyStringIO
-import re
-from htmlentitydefs import entitydefs
-from BeautifulSoup import UnicodeDammit
-import urllib,os, urlparse
-from sys import stderr
-import urlparse
-import logging
+from transmogrify.webcrawler.external.webchecker import MyHTMLParser
+from transmogrify.webcrawler.external.webchecker import MyStringIO
+
 from ConfigParser import ConfigParser
 from staticcreator import CachingURLopener
 
@@ -160,11 +165,14 @@ class WebCrawler(object):
             del urls[1:]
             for url,part in urls:
                 
-                mio_url = urlparse.urlparse(url)
-                mio_base_url = "%s://%s/" % (mio_url.scheme, mio_url.netloc)
+                my_url = urlparse.urlparse(url)
+                my_base_url = "%s://%s/" % (my_url.scheme, my_url.netloc)
+                my_path = my_url.path
                 url_condition = mio_base_url in self.alias_bases
-                
-                if not url.startswith(self.site_url[:-1]):
+                quoted_url = "%s%s"  % (my_base_url[:-1], urllib.quote(my_path))
+
+                if (not url.startswith(self.site_url[:-1])) and \
+                            (not quoted_url.startswith(self.site_url[:-1])):
                     if url_condition:
                         # is an alias
                         if [pat for pat in self.ignore_re if pat and pat.search(url)]:
