@@ -541,6 +541,8 @@ class Checker:
     def openpage(self, url_pair):
         url, fragment = url_pair
         try:
+            if not url.endswith('/'):
+                url = "%s/" % url
             return self.urlopener.open(url)
         except (OSError, IOError), msg:
             msg = self.sanitize(msg)
