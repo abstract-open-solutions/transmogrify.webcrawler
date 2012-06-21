@@ -265,9 +265,9 @@ class MyChecker(Checker):
         try:
             # XXX: Hack for handle "bad urls"
             # Some ISPRA Site Urls must ends with '/'
-            if not url.endswith('/'):
-                url = "%s/" % url
-            return self.urlopener.open(url)
+            if not old_url.endswith('/'):
+                old_url = "%s/" % old_url
+            return self.urlopener.open(old_url)
         except (OSError, IOError), msg:
             msg = self.sanitize(msg)
             self.note(0, "Error %s", msg)
