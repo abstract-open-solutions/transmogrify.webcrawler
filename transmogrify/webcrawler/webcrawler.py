@@ -170,9 +170,11 @@ class WebCrawler(object):
                 my_path = my_url.path
                 url_condition = my_base_url in self.alias_bases
                 quoted_url = "%s%s"  % (my_base_url[:-1], urllib.quote(my_path))
+                site_url = self.site_url[:-1]
 
-                if (not url.startswith(self.site_url[:-1])) and \
-                            (not quoted_url.startswith(self.site_url[:-1])):
+                if (not url.startswith(site_url)) and \
+                    (not url.lower().startswith(site_url.lower())) and \
+                    (not quoted_url.startswith(site_url)):
                     if url_condition:
                         # is an alias
                         if [pat for pat in self.ignore_re if pat and pat.search(url)]:
