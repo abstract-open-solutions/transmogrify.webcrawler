@@ -83,7 +83,8 @@ class WebCrawler(object):
                         _sortorder    = sortorder,
                         _content      = text,
                         _content_info = info,
-                        _orig_path    = path)
+                        _orig_path    = path,
+                        _orig_url     = url)
             if page and page.html():
                 item['_html'] = page.text #so cache save no cleaned version
             if origin != url:
