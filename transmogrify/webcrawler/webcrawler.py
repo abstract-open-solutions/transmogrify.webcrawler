@@ -280,6 +280,9 @@ class MyChecker(Checker):
                     old_url.endswith('.html') or \
                     old_url.endswith('.html1')):
                 old_url = "%s/" % old_url
+            # XXX: hack for concorsi section
+            if '?Id=' in old_url:
+                old_url = old_url.rstrip('/')
             return self.urlopener.open(old_url)
         except (OSError, IOError), msg:
             msg = self.sanitize(msg)
